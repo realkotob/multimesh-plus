@@ -34,7 +34,7 @@ var _is_s_key_pressed : bool = false
 
 var active_layers : Array[bool] = []
 
-var main_tool_bar : HBoxContainer = null
+var main_tool_bar : VBoxContainer = null
 var color_tool_bar : HBoxContainer = null
 var color_picker : ColorPickerButton = null
 var button_group : ButtonGroup = null
@@ -66,99 +66,28 @@ func _toggle_collision_layer(toggled : bool, flag_idx : int):
 		# Remove collision layer
 		collision_layer &= ~( 1 << (flag_idx) )
 
+func _create_section(section_name: String) -> Control:
+	var section_label: Label = Label.new()
+	section_label.text = section_name
+	section_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	section_label.theme = preload("uid://clgmp5whwhelp")
+	return section_label
+
 func init_ui() -> void:
-	main_tool_bar = HBoxContainer.new()
+	main_tool_bar = VBoxContainer.new()
 	color_tool_bar = HBoxContainer.new()
 	main_tool_bar.hide()
 	color_tool_bar.hide()
-	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, main_tool_bar)
+	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, main_tool_bar)
+
 	var gui = EditorInterface.get_base_control()
 
-	# Settings Popup
-	var settings_btn : Button = Button.new()
-	settings_btn.theme = BTN_THEME
-	settings_btn.text = "Settings"
-	settings_btn.icon = gui.get_theme_icon("GuiOptionArrow", "EditorIcons")
-	main_tool_bar.add_child(settings_btn)
-
-	var settings_popup : PopupPanel = PopupPanel.new()
-	var settings_popup_body = VBoxContainer.new()
-	settings_popup.add_child(settings_popup_body)
-	main_tool_bar.add_child(settings_popup)
-
-	settings_btn.pressed.connect(func():
-		settings_popup.popup(Rect2i(settings_btn.get_screen_position() + Vector2(0.0, settings_btn.size.y), Vector2i.ONE))
-		)
-
-	var grid_size_label : Label = Label.new()
-	grid_size_label.text = "Grid Size: "
-
-	grid_size_spinbox = SpinBox.new()
-	grid_size_spinbox.min_value = 5.0
-	grid_size_spinbox.max_value = 500.0
-	grid_size_spinbox.step = 1.0
-	
-	var update_grid_size_btn : Button = Button.new()
-	update_grid_size_btn.text = "Update Grid Size"
-
-	var grid_size_h_box : HBoxContainer = HBoxContainer.new()
-
-	settings_popup_body.add_child(grid_size_h_box)
-	grid_size_h_box.add_child(grid_size_label)
-	grid_size_h_box.add_child(grid_size_spinbox)
-	grid_size_h_box.add_child(update_grid_size_btn)
-	
-	update_grid_size_btn.pressed.connect(func():
-		_set_grid_size(grid_size_spinbox.value)
-		)
-
-	# Layers popup
-	var layers_btn : Button = Button.new()
-	layers_btn.theme = BTN_THEME
-	layers_btn.text = "Layers"
-	layers_btn.icon = gui.get_theme_icon("GuiOptionArrow", "EditorIcons")
-	main_tool_bar.add_child(layers_btn)
-
-	var layers_popup : PopupPanel = PopupPanel.new()
-	layers_popup_body = VBoxContainer.new()
-	layers_popup.add_child(layers_popup_body)
-	main_tool_bar.add_child(layers_popup)
-
-	layers_btn.pressed.connect(func():
-		layers_popup.popup(Rect2i(layers_btn.get_screen_position() + Vector2(0.0, layers_btn.size.y), Vector2i.ONE))
-		)
-
-	# Physics layer popup
-
-	var collision_layer_btn : Button = Button.new()
-	collision_layer_btn.theme = BTN_THEME
-	collision_layer_btn.tooltip_text = "Collision layer"
-	collision_layer_btn.icon = gui.get_theme_icon("CollisionObject3D", "EditorIcons")
-	main_tool_bar.add_child(collision_layer_btn)
-
-	var collision_layer_popup : PopupPanel = PopupPanel.new()
-	var collision_layer_popup_body : GridContainer = GridContainer.new()
-	collision_layer_popup_body.set("theme_override_constants/h_separation", 1)
-	collision_layer_popup_body.set("theme_override_constants/v_separation", 1)
-	collision_layer_popup_body.columns = 16
-	collision_layer_popup.add_child(collision_layer_popup_body)
-	main_tool_bar.add_child(collision_layer_popup)
-
-	for i in 32:
-		var layer_btn : Button = Button.new()
-		layer_btn.text = str(i + 1)
-		layer_btn.toggle_mode = true
-		if i == 0: layer_btn.set_pressed(true)
-		collision_layer_popup_body.add_child(layer_btn)
-		layer_btn.toggled.connect(_toggle_collision_layer.bind(i))
-
-	collision_layer_btn.pressed.connect(func():
-		collision_layer_popup.popup(Rect2i(collision_layer_btn.get_screen_position() + Vector2(0.0, collision_layer_btn.size.y), Vector2i.ONE))
-		)
-
-
 	# Create mode buttons
+	main_tool_bar.add_child(_create_section("Edit Mode"))
+	var mode_buttons_container: HBoxContainer = HBoxContainer.new()
+	main_tool_bar.add_child(mode_buttons_container)
 	button_group = ButtonGroup.new()
+
 	for btn_id in btn_mode_map:
 		var btn : Button = Button.new()
 		btn.theme = BTN_THEME
@@ -167,25 +96,28 @@ func init_ui() -> void:
 		btn.button_group = button_group
 		btn.toggle_mode = true
 		btn.set_meta("ID", btn_id)
-		main_tool_bar.add_child(btn)
+		mode_buttons_container.add_child(btn)
+
 	button_group.allow_unpress = true
 	button_group.pressed.connect(_on_button_group_press)
-	# Create preview mesh
-	preview_mesh = MeshInstance3D.new()
-	get_tree().root.call_deferred("add_child", preview_mesh)
-	preview_mesh.mesh = SphereMesh.new()
-	preview_mesh.mesh.radial_segments = 32
-	preview_mesh.mesh.rings = 16
-	preview_mesh.material_override = SPHERE_MAT
-	preview_mesh.hide()
 
 	# Brush Size UI
+	var brush_size_label: Label = Label.new()
+	brush_size_label.text = "Brush Size"
+	brush_size_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
 	brush_size_box = SpinBox.new()
-	main_tool_bar.add_child(brush_size_box)
+	brush_size_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	brush_size_box.suffix = "m"
 	brush_size_box.min_value = 0.01
 	brush_size_box.step = 0.01
 	brush_size_box.value_changed.connect(_on_brush_size_value_changed)
+
+	var brush_size_container: HBoxContainer = HBoxContainer.new()
+	brush_size_container.add_child(brush_size_label)
+	brush_size_container.add_child(brush_size_box)
+
+	main_tool_bar.add_child(brush_size_container)
 
 	# Color panel
 	color_picker = ColorPickerButton.new()
@@ -200,6 +132,65 @@ func init_ui() -> void:
 	color_tool_bar.add_child(randomize_color_button)
 
 	main_tool_bar.add_child(color_tool_bar)
+
+	# Settings Section
+	main_tool_bar.add_child(_create_section("General Settings"))
+	var settings_container = VBoxContainer.new()
+	main_tool_bar.add_child(settings_container)
+
+	# Grid size setting
+
+	var grid_size_label : Label = Label.new()
+	grid_size_label.text = "Grid Size"
+	grid_size_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	grid_size_spinbox = SpinBox.new()
+	grid_size_spinbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid_size_spinbox.min_value = 5.0
+	grid_size_spinbox.max_value = 500.0
+	grid_size_spinbox.step = 1.0
+	
+	var update_grid_size_btn : Button = Button.new()
+	update_grid_size_btn.text = "Update Grid Size"
+
+	var grid_size_h_box : HBoxContainer = HBoxContainer.new()
+	settings_container.add_child(grid_size_h_box)
+	grid_size_h_box.add_child(grid_size_label)
+	grid_size_h_box.add_child(grid_size_spinbox)
+	grid_size_h_box.add_child(update_grid_size_btn)
+	
+	update_grid_size_btn.pressed.connect(func():
+		_set_grid_size(grid_size_spinbox.value)
+		)
+
+	# Physics layer setting
+
+	var collision_layer_container : GridContainer = GridContainer.new()
+	collision_layer_container.set("theme_override_constants/h_separation", 1)
+	collision_layer_container.set("theme_override_constants/v_separation", 1)
+	collision_layer_container.columns = 16
+	settings_container.add_child(collision_layer_container)
+
+	for i in 32:
+		var layer_btn : Button = Button.new()
+		layer_btn.text = str(i + 1)
+		layer_btn.toggle_mode = true
+		if i == 0: layer_btn.set_pressed(true)
+		collision_layer_container.add_child(layer_btn)
+		layer_btn.toggled.connect(_toggle_collision_layer.bind(i))
+
+	# Layers popup (TODO: Make it the items panel)
+	layers_popup_body = VBoxContainer.new()
+	main_tool_bar.add_child(layers_popup_body)
+
+	# Create preview mesh
+	preview_mesh = MeshInstance3D.new()
+	get_tree().root.call_deferred("add_child", preview_mesh)
+	preview_mesh.mesh = SphereMesh.new()
+	preview_mesh.mesh.radial_segments = 32
+	preview_mesh.mesh.rings = 16
+	preview_mesh.material_override = SPHERE_MAT
+	preview_mesh.hide()
 
 
 func _set_current_mode(mode : MODE) -> void:
