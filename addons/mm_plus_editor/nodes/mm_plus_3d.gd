@@ -5,7 +5,7 @@ extends Node3D
 
 @export_storage var grid_size : float = 50.0
 @export_storage var previous_grid_size : float = 50.0
-@export var data : Array[MMPlusData] : set = _set_data
+@export var data : Array[MMPlusData]
 
 signal data_changed
 
@@ -52,12 +52,17 @@ func _update_visual_instances_visibility() -> void:
 		for aabb in data_group.visual_instance_RID_map:
 			RenderingServer.instance_set_visible(data_group.visual_instance_RID_map[aabb], visible)
 
-
 func _update_visual_instances_transform() -> void:
 	for data_group_idx in data.size():
 		var data_group : MMPlusData = data[data_group_idx]
 		for aabb in data_group.visual_instance_RID_map:
 			RenderingServer.instance_set_transform(data_group.visual_instance_RID_map[aabb], global_transform)
+
+func add_mesh(plus_mesh: MMPlusMesh):
+	var new_data: MMPlusData = MMPlusData.new()
+	new_data.mesh_data = plus_mesh
+	data.append(new_data)
+	_update_buffer(data.size(), {})
 
 func delete_all_transforms() -> void:
 	for data_group_idx in data.size():

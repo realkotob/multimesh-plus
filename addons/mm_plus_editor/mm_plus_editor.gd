@@ -41,7 +41,7 @@ var button_group : ButtonGroup = null
 var preview_mesh : MeshInstance3D = null
 var brush_size_box : SpinBox = null
 var randomize_color_button : Button = null
-var layers_popup_body : VBoxContainer = null
+var items_list: Control = null
 var collision_layer : int = 1
 var grid_size_spinbox : SpinBox = null
 
@@ -179,9 +179,11 @@ func init_ui() -> void:
 		collision_layer_container.add_child(layer_btn)
 		layer_btn.toggled.connect(_toggle_collision_layer.bind(i))
 
-	# Layers popup (TODO: Make it the items panel)
-	layers_popup_body = VBoxContainer.new()
-	main_tool_bar.add_child(layers_popup_body)
+	# Items section
+	main_tool_bar.add_child(_create_section("Items"))
+	items_list = preload("uid://bjj2gvaus0bgs").instantiate()
+	items_list.request_add_item.connect(_on_request_add_item)
+	main_tool_bar.add_child(items_list)
 
 	# Create preview mesh
 	preview_mesh = MeshInstance3D.new()
@@ -192,6 +194,15 @@ func init_ui() -> void:
 	preview_mesh.material_override = SPHERE_MAT
 	preview_mesh.hide()
 
+func _on_request_add_item(plus_mesh: MMPlusMesh) -> void:
+	# Check if Mesh resource is not already used by the MMPlus3D node
+	var find_int: int = selected_node.data.find_custom(func(data: MMPlusData):
+		return data.mesh_data == plus_mesh
+		)
+	if find_int != -1: return
+
+	selected_node.add_mesh(plus_mesh)
+	items_list.add_item(plus_mesh)
 
 func _set_current_mode(mode : MODE) -> void:
 	if current_mode == mode: return
@@ -323,21 +334,20 @@ func _load_selected_node_data() -> void:
 	_rebuild_layers_ui()
 
 func _rebuild_layers_ui() -> void:
+	var item_count: int = selected_node.data.size()
 	active_layers = []
-	active_layers.resize(selected_node.data.size())
+	active_layers.resize(item_count)
 	active_layers.fill(true)
 
-	for child in layers_popup_body.get_children():
-		child.queue_free()
+	var mesh_list: Array[MMPlusMesh] = []
+	mesh_list.assign(selected_node.data.map(func(mmplus_data: MMPlusData): return mmplus_data.mesh_data))
 
-	for mmplus_data_idx in selected_node.data.size():
-		var mmplus_data : MMPlusData = selected_node.data[mmplus_data_idx]
-		var checkbox : CheckBox = CheckBox.new()
-		checkbox.text = mmplus_data.mesh_data.name
-		checkbox.button_pressed = true
-		layers_popup_body.add_child(checkbox)
-		checkbox.toggled.connect(func(toggled : bool) -> void:
-			active_layers[mmplus_data_idx] = toggled
+	var items: Array[MMPlusMeshItem] = items_list.load_from_list(mesh_list)
+	# Connect active layers to item toggles
+	for idx in item_count:
+		items[idx].check_box.set_pressed_no_signal(active_layers[idx])
+		items[idx].check_box.toggled.connect(func(toggled : bool) -> void:
+			active_layers[idx] = toggled
 			)
 
 func _get_data_group_clone() -> Array[MMGroup]:
@@ -489,7 +499,6 @@ func _apply_scale_mode(event : InputEventMouse, t : Transform3D) -> void:
 					data_group.increment_buffer_transform_scale(aabb, idx, -scale_value if event.shift_pressed else scale_value)
 
 	_update_selected_node_buffers()
-
 
 func _apply_color_mode(t : Transform3D) -> void:
 	var brush_size : float = brush_size_map[current_mode]
