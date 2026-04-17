@@ -183,6 +183,7 @@ func init_ui() -> void:
 	main_tool_bar.add_child(_create_section("Items"))
 	items_list = preload("uid://bjj2gvaus0bgs").instantiate()
 	items_list.request_add_item.connect(_on_request_add_item)
+	items_list.request_delete_item.connect(_on_request_delete_item)
 	main_tool_bar.add_child(items_list)
 
 	# Create preview mesh
@@ -203,6 +204,13 @@ func _on_request_add_item(plus_mesh: MMPlusMesh) -> void:
 
 	selected_node.add_mesh(plus_mesh)
 	items_list.add_item(plus_mesh)
+	
+	_load_selected_node_data()
+
+func _on_request_delete_item(idx: int) -> void:
+	selected_node.remove_mesh(idx)
+	items_list.remove_item(idx)
+	_load_selected_node_data()
 
 func _set_current_mode(mode : MODE) -> void:
 	if current_mode == mode: return

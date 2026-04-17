@@ -1,9 +1,11 @@
 @tool
 extends Control
 
-signal request_add_item(item: MMPlusMesh)
 const ITEM = preload("./item.tscn")
 @onready var item_holder: HFlowContainer = %ItemHolder
+
+signal request_add_item(item: MMPlusMesh)
+signal request_delete_item(idx: int)
 
 func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 	data = data as Dictionary
@@ -40,4 +42,11 @@ func add_item(plus_mesh: MMPlusMesh) -> MMPlusMeshItem:
 	var item: MMPlusMeshItem = ITEM.instantiate()
 	item.item_name = plus_mesh.name
 	item_holder.add_child(item)
+	item.delete_button.pressed.connect(_on_delete_button_pressed.bind(item))
 	return item
+
+func remove_item(idx: int) -> void:
+	item_holder.get_child(idx).queue_free()
+
+func _on_delete_button_pressed(item: MMPlusMeshItem) -> void:
+	request_delete_item.emit(item.get_index())
