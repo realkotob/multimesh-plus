@@ -56,6 +56,10 @@ By default, MMgrid will partition the space into a grid with cells that are 50 i
 
 - [ ] Make data block more resilient to changes.
 
+- [x] Add MMPlusMesh by drag and drop.
+
+- [ ] Remove MMplusMesh with popup menu.
+
 - [ ] Better placement (Poisson disk sampling?).
 
 - [ ] Spread in volume / spread on surface option.
