@@ -1,5 +1,7 @@
 ### Todo list
 
+### Done
+
 - [x] Draw / Erase instances
 
 - [x] Simple grid spatial partitioning
@@ -54,16 +56,24 @@
 
 By default, MMgrid will partition the space into a grid with cells that are 50 in size.
 
-- [ ] Make data block more resilient to changes.
+- [x] Make data block more resilient to changes.
 
 - [x] Add MMPlusMesh by drag and drop.
 
-- [ ] Remove MMplusMesh with popup menu.
+- [x] Remove MMplusMesh with popup menu.
 
-- [ ] Better placement (Poisson disk sampling?).
+### Important
 
-- [ ] Spread in volume / spread on surface option.
+- [ ] Undo/Redo support adding and removing mesh
+
+- [ ] Save resource on disk (limit owner scene file size)
 
 - [ ] Custom vertex color / custom data option.
 
 Currently, the plugin expect all multimesh to use the color option (storing 16 floats per instance by default in the buffer), but we should be able to switch between, transform only, transform + vertex color, and transform + vertex color + custom data.
+
+### Nice to have
+
+- [ ] Better placement (Poisson disk sampling?).
+
+- [ ] Spread in volume / spread on surface option.
