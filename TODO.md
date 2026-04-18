@@ -62,9 +62,9 @@ By default, MMgrid will partition the space into a grid with cells that are 50 i
 
 - [x] Remove MMplusMesh with popup menu.
 
-### Important
+- [x] Undo/Redo support adding and removing meshes.
 
-- [ ] Undo/Redo support adding and removing mesh
+### Important
 
 - [ ] Save resource on disk (limit owner scene file size)
 

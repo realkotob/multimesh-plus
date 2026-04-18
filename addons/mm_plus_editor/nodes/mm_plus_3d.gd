@@ -32,10 +32,13 @@ func _update_visual_instances_transform() -> void:
 		for aabb in data_group.visual_instance_RID_map:
 			RenderingServer.instance_set_transform(data_group.visual_instance_RID_map[aabb], global_transform)
 
-func add_mesh(plus_mesh: MMPlusMesh):
+func add_mesh(plus_mesh: MMPlusMesh, at_idx: int = -1):
 	var new_data: MMPlusData = MMPlusData.new()
 	new_data.mesh_data = plus_mesh
-	data.append(new_data)
+	if at_idx == -1:
+		data.append(new_data)
+	else:
+		data.insert(at_idx, new_data)
 	_update_buffer(data.size(), {})
 
 func remove_mesh(idx: int):

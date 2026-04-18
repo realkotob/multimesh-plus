@@ -202,15 +202,36 @@ func _on_request_add_item(plus_mesh: MMPlusMesh) -> void:
 		)
 	if find_int != -1: return
 
-	selected_node.add_mesh(plus_mesh)
-	items_list.add_item(plus_mesh)
-	
-	_load_selected_node_data()
+	var undo_idx: int = selected_node.data.size()
+	var undo_prop: Array[MMGroup] = _get_data_group_clone()
+
+	var undo_redo : EditorUndoRedoManager = get_undo_redo()
+	undo_redo.create_action("Add Mesh")
+	undo_redo.add_do_method(selected_node, "add_mesh", plus_mesh)
+	undo_redo.add_do_method(self, "_load_selected_node_data")
+
+	undo_redo.add_undo_method(selected_node, "remove_mesh", undo_idx)
+	undo_redo.add_undo_property(self, "data_group_list", undo_prop)
+	undo_redo.add_undo_method(self, "_update_selected_node_buffers_history", undo_prop)
+	undo_redo.add_undo_method(self, "_load_selected_node_data")
+	undo_redo.commit_action()
 
 func _on_request_delete_item(idx: int) -> void:
-	selected_node.remove_mesh(idx)
-	items_list.remove_item(idx)
-	_load_selected_node_data()
+	var undo_plus_mesh: MMPlusMesh = selected_node.data[idx].mesh_data
+	var undo_idx: int = idx
+	var undo_prop: Array[MMGroup] = _get_data_group_clone()
+
+	var undo_redo: EditorUndoRedoManager = get_undo_redo()
+	undo_redo.create_action("Remove Mesh")
+	undo_redo.add_do_method(selected_node, "remove_mesh", idx)
+	undo_redo.add_do_method(self, "_load_selected_node_data")
+
+
+	undo_redo.add_undo_method(selected_node, "add_mesh", undo_plus_mesh, undo_idx)
+	undo_redo.add_undo_property(self, "data_group_list", undo_prop)
+	undo_redo.add_undo_method(self, "_update_selected_node_buffers_history", undo_prop)
+	undo_redo.add_undo_method(self, "_load_selected_node_data")
+	undo_redo.commit_action()
 
 func _set_current_mode(mode : MODE) -> void:
 	if current_mode == mode: return
