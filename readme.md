@@ -9,13 +9,11 @@ Add, delete, scale, and paint. MM+ is designed to facilitate the editing of mult
 
 ### MMPlus3D node
 
-To use the plugin, add a `MMPlus3D` node in your scene and populate the data block array in the inspector. 
-
-- The data block array must contain valid `MMPlusData` resources with a valid `MMPlusMesh` subd resource.
-
-- `MMPlusData` resources should not be used across different `MMPlus3D` nodes, as they contain all the raw information (multimesh buffers).
+To use the plugin, add a `MMPlus3D` node in your scene and populate the `items` section with `MMPlusMesh` resources.
 
 - `MMPlusMesh` resources can be saved and used in multiple `MMPlus3D` nodes.
+
+⚠️ MM+ automatically saves all the data in a hidden folder named `.mmplus_save_dir` inside your project's root. This folder should be tracked by GIT and shouldn't be manually managed.
 
 ### Modes
 
@@ -43,7 +41,4 @@ Use `left click` to apply the selected color to items, and use the randomize tog
 
 ### Known Issues
 
-- A mismatch between the `MultiMeshPlus3D` node data block and the plugin can happen.
-	- Make sure your data block doesn't contain empty entries.
-	- Deselect and reselect the `MultiMeshPlus3D` node to force plugin update.
 - The Undo / Redo feature can be a bit buggy sometimes.

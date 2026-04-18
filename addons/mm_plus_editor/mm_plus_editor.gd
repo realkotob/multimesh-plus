@@ -309,6 +309,9 @@ func _on_button_group_press(_pressed_button : BaseButton):
 func _enter_tree() -> void:
 	init_ui()
 
+func _save_external_data() -> void:
+	_check_unused_resources()
+
 func _exit_tree() -> void:
 	if main_tool_bar == null: return
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, main_tool_bar)
@@ -576,3 +579,17 @@ func _ray_cast(start : Vector3, end : Vector3) -> Dictionary:
 	var query = PhysicsRayQueryParameters3D.create(start, end, collision_layer)
 	var ray_cast_result = space_state.intersect_ray(query)
 	return ray_cast_result
+
+func _check_unused_resources() -> void:
+	var save_path: String = "res://.mmplus_save_dir/"
+
+	if !DirAccess.dir_exists_absolute(save_path):
+		DirAccess.make_dir_absolute(save_path)
+
+	var files = DirAccess.get_files_at(save_path)
+	
+	for file in files:
+		var file_path: String = save_path.path_join(file)
+		if ResourceLoader.get_cached_ref(file_path) == null:
+			print("Delete unused resource")
+			DirAccess.remove_absolute(file_path)

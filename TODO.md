@@ -64,9 +64,9 @@ By default, MMgrid will partition the space into a grid with cells that are 50 i
 
 - [x] Undo/Redo support adding and removing meshes.
 
-### Important
+- [x] Save resource on disk (limit owner scene file size)
 
-- [ ] Save resource on disk (limit owner scene file size)
+### Important
 
 - [ ] Custom vertex color / custom data option.
 

@@ -5,7 +5,9 @@ extends Node3D
 
 @export_storage var grid_size : float = 50.0
 @export_storage var previous_grid_size : float = 50.0
-@export_storage var data : Array[MMPlusData]
+@export var data : Array[MMPlusData]
+
+var save_path: String = "res://.mmplus_save_dir/"
 
 signal data_changed
 
@@ -19,6 +21,16 @@ func _notification(what: int) -> void:
 			_update_visual_instances_visibility()
 		NOTIFICATION_TRANSFORM_CHANGED:
 			_update_visual_instances_transform()
+		NOTIFICATION_EDITOR_PRE_SAVE:
+			for data_group in data:
+				if !data_group.is_built_in():
+					ResourceSaver.save(data_group, data_group.resource_path)
+					continue
+				var file_name: String = data_group.generate_scene_unique_id() + ".res"
+				var path: String = save_path.path_join(file_name)
+				var error: Error = ResourceSaver.save(data_group, path)
+				data_group.take_over_path(path)
+
 
 func _update_visual_instances_visibility() -> void:
 	for data_group_idx in data.size():
