@@ -5,7 +5,7 @@ extends Node3D
 
 @export_storage var grid_size : float = 50.0
 @export_storage var previous_grid_size : float = 50.0
-@export var data : Array[MMPlusData]
+@export_storage var data : Array[MMPlusData]
 
 var save_path: String = "res://.mmplus_save_dir/"
 
