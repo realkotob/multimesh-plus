@@ -103,9 +103,9 @@ func _add_visual_instance(group_idx : int, aabb : AABB) -> void:
 	data[group_idx].multimesh_RID_map[aabb] = m_rid
 	data[group_idx].visual_instance_RID_map[aabb] = i_rid
 
-func _add_multimesh_data(group_idx : int, aabb : AABB) -> void:
+func _add_multimesh_data(group_idx : int, aabb : AABB, use_color: bool) -> void:
 	var multimesh : MultiMesh = MultiMesh.new()
-	multimesh.use_colors = true
+	multimesh.use_colors = use_color
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	data[group_idx].multimesh_data_map[aabb] = multimesh
 
@@ -137,19 +137,25 @@ func _update_buffer(data_group_idx : int, buffer_map : Dictionary[AABB, PackedFl
 	for aabb in buffer_map:
 		var buffer : PackedFloat32Array = buffer_map[aabb]
 
+		var data_mode: MMDataMode.Mode = data[data_group_idx].mesh_data.data_mode
+		var data_size: int = MMDataMode.get_data_mode_size(data[data_group_idx].mesh_data.data_mode)
+		var use_color: bool = data_mode == MMDataMode.Mode.TransformAndVertexColor
+
+
 		if !data[data_group_idx].multimesh_RID_map.has(aabb):
 			_add_visual_instance(data_group_idx, aabb)
 		if !data[data_group_idx].multimesh_data_map.has(aabb):
-			_add_multimesh_data(data_group_idx, aabb)
+			_add_multimesh_data(data_group_idx, aabb, use_color)
 
 		var m_rid : RID = data[data_group_idx].multimesh_RID_map[aabb]
 		var multimesh : MultiMesh = data[data_group_idx].multimesh_data_map[aabb]
 
-		RenderingServer.multimesh_allocate_data(m_rid, buffer.size() / 16, RenderingServer.MULTIMESH_TRANSFORM_3D, true)
+
+		RenderingServer.multimesh_allocate_data(m_rid, buffer.size() / data_size, RenderingServer.MULTIMESH_TRANSFORM_3D, use_color, false)
 
 		if !buffer.is_empty():
 			RenderingServer.multimesh_set_buffer(m_rid, buffer)
-			multimesh.instance_count = buffer.size() / 16
+			multimesh.instance_count = buffer.size() / data_size
 			multimesh.buffer = buffer
 		else:
 			_remove_buffer(data_group_idx, aabb)

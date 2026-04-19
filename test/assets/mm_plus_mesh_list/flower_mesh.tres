@@ -55,4 +55,5 @@ mesh = SubResource("ArrayMesh_h73uu")
 thumbnail = SubResource("ImageTexture_rdjhr")
 spacing = 2.0
 rotation_mode = 1
+data_mode = 1
 metadata/_custom_type_script = "uid://dre8v2iurryb6"

@@ -30,6 +30,8 @@ enum RotationMode {
 
 @export var rotation_mode : RotationMode = RotationMode.NONE
 
+@export var data_mode : MMDataMode.Mode = MMDataMode.Mode.TransformOnly
+
 func update_thumbnail() -> void:
 	thumbnail = EditorInterface.make_mesh_previews([mesh], 64)[0]
 

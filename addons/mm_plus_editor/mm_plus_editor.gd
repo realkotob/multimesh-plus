@@ -344,7 +344,7 @@ func _load_selected_node_data() -> void:
 		for data_group in selected_node.data:
 			var data : Dictionary[AABB, MultiMesh] = data_group.multimesh_data_map
 			var group : MMGroup = MMGroup.new()
-			group.setup(data, selected_node.grid_size)
+			group.setup(data, selected_node.grid_size, data_group.mesh_data.data_mode)
 			data_group_list.append(group)
 	else:
 		# If mismatch flatten all buffers into one
@@ -356,7 +356,7 @@ func _load_selected_node_data() -> void:
 			for multimesh in data.values():
 				flat_buffer.append_array(multimesh.buffer)
 			var group : MMGroup = MMGroup.new()
-			group.setup_from_buffer(flat_buffer, selected_node.grid_size)
+			group.setup_from_buffer(flat_buffer, selected_node.grid_size, data_group.mesh_data.data_mode)
 			data_group_list.append(group)
 	
 		selected_node.delete_all_transforms()
