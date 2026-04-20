@@ -31,3 +31,4 @@ mesh = SubResource("CylinderMesh_xa4g1")
 thumbnail = SubResource("ImageTexture_ys3c2")
 spacing = 2.0
 offset = Vector3(0, 0.5, 0)
+data_mode = 1

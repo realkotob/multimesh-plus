@@ -2,12 +2,11 @@
 
 [ext_resource type="Script" uid="uid://be4lu3ug8donp" path="res://addons/mm_plus_editor/nodes/mm_plus_3d.gd" id="1_xa4g1"]
 [ext_resource type="Script" uid="uid://ntw5ubccc2qm" path="res://addons/mm_plus_editor/resources/mm_plus_data.gd" id="2_3i3ij"]
-[ext_resource type="Resource" uid="uid://cntsodwo2lnjx" path="res://.mmplus_save_dir/sdl2f.res" id="3_fbkg3"]
+[ext_resource type="Resource" uid="uid://cra0etmxqgsyx" path="res://.mmplus_save_dir/4xqmy.res" id="3_1j1nj"]
 [ext_resource type="Material" uid="uid://c1kohdpddpx58" path="res://test/assets/materials/grid_mat.tres" id="4_1flo6"]
-[ext_resource type="Resource" uid="uid://qaut257isa6g" path="res://.mmplus_save_dir/jv1qq.res" id="5_t4iak"]
-[ext_resource type="Resource" uid="uid://jr5gc57vwhfa" path="res://.mmplus_save_dir/g17aq.res" id="6_3i3ij"]
-[ext_resource type="Resource" uid="uid://b47yc1pclgsw7" path="res://.mmplus_save_dir/px21s.res" id="6_r3hpo"]
-[ext_resource type="Resource" uid="uid://dljdh6omvu87a" path="res://.mmplus_save_dir/4n7hx.res" id="7_t4iak"]
+[ext_resource type="Resource" uid="uid://ebyncbloev74" path="res://.mmplus_save_dir/ppeig.res" id="4_fbkg3"]
+[ext_resource type="Resource" uid="uid://dppqirnsraq4h" path="res://.mmplus_save_dir/yp275.res" id="5_3i3ij"]
+[ext_resource type="Resource" uid="uid://b8ug0uehkhhy3" path="res://.mmplus_save_dir/pbad5.res" id="6_t4iak"]
 [ext_resource type="ArrayMesh" uid="uid://e30wijdwlaje" path="res://test/assets/ground_mesh.obj" id="9_ctnn2"]
 
 [sub_resource type="Environment" id="Environment_u2sx3"]
@@ -45,7 +44,7 @@ environment = SubResource("Environment_u2sx3")
 
 [node name="MmPlus3D" type="Node3D" parent="." unique_id=1238071199]
 script = ExtResource("1_xa4g1")
-data = Array[ExtResource("2_3i3ij")]([ExtResource("3_fbkg3"), ExtResource("5_t4iak"), ExtResource("6_r3hpo"), ExtResource("6_3i3ij"), ExtResource("7_t4iak")])
+data = Array[ExtResource("2_3i3ij")]([ExtResource("3_1j1nj"), ExtResource("4_fbkg3"), ExtResource("5_3i3ij"), ExtResource("6_t4iak")])
 metadata/_custom_type_script = "uid://be4lu3ug8donp"
 metadata/_edit_lock_ = true
 

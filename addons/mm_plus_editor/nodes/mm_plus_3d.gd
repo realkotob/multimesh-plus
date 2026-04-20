@@ -12,7 +12,6 @@ var save_path: String = "res://.mmplus_save_dir/"
 signal data_changed
 
 func _ready() -> void:
-	load_multimesh()
 	set_notify_transform(true)
 
 func _notification(what: int) -> void:
@@ -135,12 +134,10 @@ func check_missmatch(data_group_list : Array[MMGroup]):
 
 func _update_buffer(data_group_idx : int, buffer_map : Dictionary[AABB, PackedFloat32Array]) -> void:
 	for aabb in buffer_map:
-		var buffer : PackedFloat32Array = buffer_map[aabb]
 
 		var data_mode: MMDataMode.Mode = data[data_group_idx].mesh_data.data_mode
-		var data_size: int = MMDataMode.get_data_mode_size(data[data_group_idx].mesh_data.data_mode)
+		var data_size: int = MMDataMode.get_data_mode_size(data_mode)
 		var use_color: bool = data_mode == MMDataMode.Mode.TransformAndVertexColor
-
 
 		if !data[data_group_idx].multimesh_RID_map.has(aabb):
 			_add_visual_instance(data_group_idx, aabb)
@@ -151,6 +148,16 @@ func _update_buffer(data_group_idx : int, buffer_map : Dictionary[AABB, PackedFl
 		var multimesh : MultiMesh = data[data_group_idx].multimesh_data_map[aabb]
 
 
+		var buffer : PackedFloat32Array = []
+
+		if buffer_map[aabb].size() % data_size == 0:
+			buffer = buffer_map[aabb]
+		else:
+			push_warning("Buffer size doesn't match mesh data mode size, buffer size will be updated but some data might be lost.")
+			buffer = _repare_buffer_size_mismatch(buffer_map[aabb], data_size)
+			multimesh.instance_count = 0
+			multimesh.use_colors = use_color
+
 		RenderingServer.multimesh_allocate_data(m_rid, buffer.size() / data_size, RenderingServer.MULTIMESH_TRANSFORM_3D, use_color, false)
 
 		if !buffer.is_empty():
@@ -159,6 +166,28 @@ func _update_buffer(data_group_idx : int, buffer_map : Dictionary[AABB, PackedFl
 			multimesh.buffer = buffer
 		else:
 			_remove_buffer(data_group_idx, aabb)
+
+func _repare_buffer_size_mismatch(buffer : PackedFloat32Array, new_size: int) -> PackedFloat32Array:
+	var resized_buffer: PackedFloat32Array = []
+	var previous_size: int = MMDataMode.get_data_mode_from_buffer_size(buffer.size())
+
+	if new_size < previous_size:
+		for idx in range(0, buffer.size(), previous_size):
+			for i in new_size:
+				resized_buffer.append(buffer[idx + i])
+
+	if new_size > previous_size:
+		for idx in range(0, buffer.size(), new_size):
+			for i in previous_size:
+				resized_buffer.append(buffer[idx + i])
+
+			if new_size > previous_size:
+				var missing_data: PackedFloat32Array = []
+				missing_data.resize(new_size - previous_size)
+				missing_data.fill(0.0)
+				resized_buffer.append_array(missing_data)
+
+	return resized_buffer
 
 func _enter_tree() -> void:
 	load_multimesh()
