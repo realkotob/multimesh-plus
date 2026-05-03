@@ -241,7 +241,9 @@ func _set_current_mode(mode : MODE) -> void:
 	if current_mode != MODE.NONE:
 		brush_size_box.set_value_no_signal(brush_size_map[current_mode])
 		_update_brush_preview_size()
-	
+	else:
+		preview_mesh.visible = false
+
 	color_tool_bar.visible = current_mode == MODE.COLOR
 
 func _update_brush_preview_size() -> void:
@@ -333,6 +335,9 @@ func _edit(object) -> void:
 		previous_selected_node.data_changed.disconnect(_load_selected_node_data)
 	
 	main_tool_bar.visible = selected_node != null
+
+	if selected_node == null:
+		preview_mesh.hide()
 
 # Reinit all the plugin on selected node data change, I'm too lazy to make something better right now
 func _load_selected_node_data() -> void:
