@@ -591,7 +591,7 @@ func _ray_cast(start : Vector3, end : Vector3) -> Dictionary:
 	return ray_cast_result
 
 func _check_unused_resources() -> void:
-	var save_path: String = "res://.mmplus_save_dir/"
+	var save_path: String = "res://mmplus_save_dir/"
 
 	if !DirAccess.dir_exists_absolute(save_path):
 		DirAccess.make_dir_absolute(save_path)
@@ -600,6 +600,9 @@ func _check_unused_resources() -> void:
 	
 	for file in files:
 		var file_path: String = save_path.path_join(file)
-		if ResourceLoader.get_cached_ref(file_path) == null:
+
+		var is_used: bool = ResourceLoader.get_cached_ref(file_path) != null
+
+		if !is_used:
 			print("Delete unused resource")
 			DirAccess.remove_absolute(file_path)
