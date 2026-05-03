@@ -8,6 +8,7 @@ extends Node3D
 @export_storage var data : Array[MMPlusData]
 
 var save_path: String = "res://.mmplus_save_dir/"
+var rid_references: Array[MMRidRef]
 
 signal data_changed
 
@@ -32,14 +33,14 @@ func _notification(what: int) -> void:
 
 
 func _update_visual_instances_visibility() -> void:
-	for data_group_idx in data.size():
-		var data_group : MMPlusData = data[data_group_idx]
+	for data_group_idx in rid_references.size():
+		var data_group : MMRidRef = rid_references[data_group_idx]
 		for aabb in data_group.visual_instance_RID_map:
 			RenderingServer.instance_set_visible(data_group.visual_instance_RID_map[aabb], visible)
 
 func _update_visual_instances_transform() -> void:
-	for data_group_idx in data.size():
-		var data_group : MMPlusData = data[data_group_idx]
+	for data_group_idx in rid_references.size():
+		var data_group : MMRidRef = rid_references[data_group_idx]
 		for aabb in data_group.visual_instance_RID_map:
 			RenderingServer.instance_set_transform(data_group.visual_instance_RID_map[aabb], global_transform)
 
@@ -48,16 +49,19 @@ func add_mesh(plus_mesh: MMPlusMesh, at_idx: int = -1):
 	new_data.mesh_data = plus_mesh
 	if at_idx == -1:
 		data.append(new_data)
+		rid_references.append(MMRidRef.new())
 	else:
 		data.insert(at_idx, new_data)
+		rid_references.insert(at_idx, MMRidRef.new())
 	_update_buffer(data.size(), {})
 
 func remove_mesh(idx: int):
 	_delete_group_data(idx)
 	data.remove_at(idx)
+	rid_references.remove_at(idx)
 
 func _delete_group_data(group_idx: int) -> void:
-	var group_data : MMPlusData = data[group_idx]
+	var group_data : MMRidRef = rid_references[group_idx]
 
 	for aabb in group_data.visual_instance_RID_map:
 		RenderingServer.free_rid(group_data.visual_instance_RID_map[aabb])
@@ -99,8 +103,8 @@ func _add_visual_instance(group_idx : int, aabb : AABB) -> void:
 	RenderingServer.instance_geometry_set_cast_shadows_setting(i_rid, mesh_data.cast_shadow)
 	RenderingServer.instance_geometry_set_visibility_range(i_rid, 0.0, 100.0 + grid_size / 2.0, 0.0, 0.0, RenderingServer.VISIBILITY_RANGE_FADE_DISABLED)
 	RenderingServer.instance_set_visible(i_rid, visible)
-	data[group_idx].multimesh_RID_map[aabb] = m_rid
-	data[group_idx].visual_instance_RID_map[aabb] = i_rid
+	rid_references[group_idx].multimesh_RID_map[aabb] = m_rid
+	rid_references[group_idx].visual_instance_RID_map[aabb] = i_rid
 
 func _add_multimesh_data(group_idx : int, aabb : AABB, use_color: bool) -> void:
 	var multimesh : MultiMesh = MultiMesh.new()
@@ -115,12 +119,12 @@ func update_group_buffer(data_group_list : Array[MMGroup]):
 		_update_buffer(data_group_idx, buffer_map)
 
 func _remove_buffer(data_group_idx : int, aabb : AABB):
-	var m_rid : RID = data[data_group_idx].multimesh_RID_map[aabb]
-	var i_rid : RID = data[data_group_idx].visual_instance_RID_map[aabb]
+	var m_rid : RID = rid_references[data_group_idx].multimesh_RID_map[aabb]
+	var i_rid : RID = rid_references[data_group_idx].visual_instance_RID_map[aabb]
 	RenderingServer.free_rid(i_rid)
 	RenderingServer.free_rid(m_rid)
-	data[data_group_idx].visual_instance_RID_map.erase(aabb)
-	data[data_group_idx].multimesh_RID_map.erase(aabb)
+	rid_references[data_group_idx].visual_instance_RID_map.erase(aabb)
+	rid_references[data_group_idx].multimesh_RID_map.erase(aabb)
 	data[data_group_idx].multimesh_data_map.erase(aabb)
 
 func check_missmatch(data_group_list : Array[MMGroup]):
@@ -139,12 +143,12 @@ func _update_buffer(data_group_idx : int, buffer_map : Dictionary[AABB, PackedFl
 		var data_size: int = MMDataMode.get_data_mode_size(data_mode)
 		var use_color: bool = data_mode == MMDataMode.Mode.TransformAndVertexColor
 
-		if !data[data_group_idx].multimesh_RID_map.has(aabb):
+		if !rid_references[data_group_idx].multimesh_RID_map.has(aabb):
 			_add_visual_instance(data_group_idx, aabb)
 		if !data[data_group_idx].multimesh_data_map.has(aabb):
 			_add_multimesh_data(data_group_idx, aabb, use_color)
 
-		var m_rid : RID = data[data_group_idx].multimesh_RID_map[aabb]
+		var m_rid : RID = rid_references[data_group_idx].multimesh_RID_map[aabb]
 		var multimesh : MultiMesh = data[data_group_idx].multimesh_data_map[aabb]
 
 
@@ -190,17 +194,21 @@ func _repare_buffer_size_mismatch(buffer : PackedFloat32Array, new_size: int) ->
 	return resized_buffer
 
 func _enter_tree() -> void:
+	# Create rid array
+	for _i in data.size():
+		rid_references.append(MMRidRef.new())
+	
 	load_multimesh()
 
 func _exit_tree() -> void:
 	flush()
 
 func flush() -> void:
-	for data_group_idx in data.size():
-		for aabb in data[data_group_idx].visual_instance_RID_map:
-			RenderingServer.free_rid(data[data_group_idx].visual_instance_RID_map[aabb])
-		data[data_group_idx].visual_instance_RID_map = {}
+	for data_group_idx in rid_references.size():
+		for aabb in rid_references[data_group_idx].visual_instance_RID_map:
+			RenderingServer.free_rid(rid_references[data_group_idx].visual_instance_RID_map[aabb])
+		rid_references[data_group_idx].visual_instance_RID_map = {}
 
-		for aabb in data[data_group_idx].multimesh_RID_map:
-			RenderingServer.free_rid(data[data_group_idx].multimesh_RID_map[aabb])
-		data[data_group_idx].multimesh_RID_map = {}
+		for aabb in rid_references[data_group_idx].multimesh_RID_map:
+			RenderingServer.free_rid(rid_references[data_group_idx].multimesh_RID_map[aabb])
+		rid_references[data_group_idx].multimesh_RID_map = {}
