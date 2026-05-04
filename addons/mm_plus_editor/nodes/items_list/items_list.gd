@@ -13,19 +13,26 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 	var data_type: String = data.get("type")
 	if data_type == null: return false
 	if data_type != "files": return false
-	var files: PackedStringArray = data.get("files", []) as PackedStringArray
+	var files: Array[String]
+	files.assign(data.get("files", []))
 	var file_path: String = files[0]
 	var editor_file_system: EditorFileSystem = EditorInterface.get_resource_filesystem()
 	return editor_file_system.get_file_type(file_path) == "Resource"
 
 func _drop_data(at_position: Vector2, data: Variant) -> void:
-	var files: PackedStringArray = data.get("files", []) as PackedStringArray
-	var file_path = files[0]
+	var files: Array[String]
+	files.assign(data.get("files", []))
 
-	var plus_mesh: MMPlusMesh = load(file_path) as MMPlusMesh
-	if plus_mesh == null: return
+	# Load and filter to only keep MMPlusMesh resources after load
+	var mesh_array: Array[MMPlusMesh] = []
+	mesh_array.assign(
+		files.map(func(file_path: String): return load(file_path))
+		.filter(func(r: Resource): return r is MMPlusMesh)
+	)
 
-	request_add_item.emit(plus_mesh)
+	for plus_mesh in mesh_array:
+		request_add_item.emit(plus_mesh)
+
 
 func load_from_list(plus_mesh_list: Array[MMPlusMesh]) -> Array[MMPlusMeshItem]:
 	for child in item_holder.get_children():
