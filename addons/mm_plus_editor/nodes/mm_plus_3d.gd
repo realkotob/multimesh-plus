@@ -64,17 +64,17 @@ func remove_mesh(idx: int):
 	rid_references.remove_at(idx)
 
 func _delete_group_data(group_idx: int) -> void:
-	var group_data : MMRidRef = rid_references[group_idx]
+	var group_rid_ref : MMRidRef = rid_references[group_idx]
 
-	for aabb in group_data.visual_instance_RID_map:
-		RenderingServer.free_rid(group_data.visual_instance_RID_map[aabb])
-	group_data.visual_instance_RID_map = {}
+	for aabb in group_rid_ref.visual_instance_RID_map:
+		RenderingServer.free_rid(group_rid_ref.visual_instance_RID_map[aabb])
+	group_rid_ref.visual_instance_RID_map = {}
 
-	for aabb in group_data.multimesh_RID_map:
-		RenderingServer.free_rid(group_data.multimesh_RID_map[aabb])
-	group_data.multimesh_RID_map = {}
+	for aabb in group_rid_ref.multimesh_RID_map:
+		RenderingServer.free_rid(group_rid_ref.multimesh_RID_map[aabb])
+	group_rid_ref.multimesh_RID_map = {}
 
-	group_data.multimesh_data_map = {}
+	data[group_idx].multimesh_data_map = {}
 
 func delete_all_transforms() -> void:
 	for group_idx in data.size():
