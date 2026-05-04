@@ -3,9 +3,13 @@ extends Control
 
 const ITEM = preload("./item.tscn")
 @onready var item_holder: HFlowContainer = %ItemHolder
+@onready var no_items_label: VBoxContainer = %NoItemsLabel
 
 signal request_add_item(item: MMPlusMesh)
 signal request_delete_item(idx: int)
+
+func _ready() -> void:
+	item_holder.child_order_changed.connect(_on_items_order_changed)
 
 func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 	data = data as Dictionary
@@ -33,7 +37,6 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
 	for plus_mesh in mesh_array:
 		request_add_item.emit(plus_mesh)
 
-
 func load_from_list(plus_mesh_list: Array[MMPlusMesh]) -> Array[MMPlusMeshItem]:
 	for child in item_holder.get_children():
 		child.queue_free()
@@ -55,6 +58,9 @@ func add_item(plus_mesh: MMPlusMesh) -> MMPlusMeshItem:
 
 func remove_item(idx: int) -> void:
 	item_holder.get_child(idx).queue_free()
+
+func _on_items_order_changed() -> void:
+	no_items_label.visible = item_holder.get_child_count() == 0
 
 func _on_delete_button_pressed(item: MMPlusMeshItem) -> void:
 	request_delete_item.emit(item.get_index())

@@ -2,7 +2,8 @@
 
 [ext_resource type="Script" uid="uid://dpef33ja2qr18" path="res://addons/mm_plus_editor/nodes/items_list/items_list.gd" id="1_sjdik"]
 
-[node name="ItemsList" type="ScrollContainer" unique_id=1845716171]
+[node name="ItemsList" type="Control" unique_id=149467511]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -12,8 +13,49 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("1_sjdik")
 
-[node name="ItemHolder" type="HFlowContainer" parent="." unique_id=276181460]
+[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=1117280255]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ItemHolder" type="HFlowContainer" parent="ScrollContainer" unique_id=276181460]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="NoItemsLabel" type="VBoxContainer" parent="." unique_id=924078302]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -97.5
+offset_top = -20.0
+offset_right = 97.5
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="Label" type="Label" parent="NoItemsLabel" unique_id=1436929782]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "No items to select"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="NoItemsLabel" unique_id=1810538745]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 12
+text = "Drag and drop MMPlusMesh here"
+horizontal_alignment = 1
+vertical_alignment = 1
