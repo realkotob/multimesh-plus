@@ -607,16 +607,14 @@ func _check_unused_resources() -> void:
 		DirAccess.make_dir_absolute(save_path)
 
 	# TODO: Improve deletion method
-	# Loop through all existing MM+ resources and delete those that aren't referenced anywhere.
-	# This method is a bit of a brute-force approach. We need a better way to keep track of all unused resources resulting from group deletion or parent scene deletion.
+	# Delete all MMPlusData resources that do not have a parent scene.
 
 	var files = DirAccess.get_files_at(save_path)
 
 	for file in files:
 		var file_path: String = save_path.path_join(file)
-
-		var is_used: bool = ResourceLoader.get_cached_ref(file_path) != null
-
-		if !is_used:
-			print("Delete unused resource")
+		var data: MMPlusData = load(file_path) as MMPlusData
+		if data == null: continue
+		if !ResourceUID.has_id(data.owner_uid):
 			DirAccess.remove_absolute(file_path)
+			print("Delete: ", file_path)

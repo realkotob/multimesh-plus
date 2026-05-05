@@ -24,8 +24,9 @@ func _notification(what: int) -> void:
 		NOTIFICATION_EDITOR_PRE_SAVE:
 			var save_flags: int = ResourceSaver.FLAG_CHANGE_PATH + ResourceSaver.FLAG_COMPRESS
 			for data_group in data:
+				data_group.owner_uid = ResourceLoader.get_resource_uid(owner.scene_file_path)
+				
 				var is_resource_on_disk: bool = FileAccess.file_exists(data_group.resource_path)
-
 				if is_resource_on_disk:
 					ResourceSaver.save(data_group, data_group.resource_path, save_flags)
 				else:
@@ -33,7 +34,6 @@ func _notification(what: int) -> void:
 					var path: String = save_path.path_join(file_name)
 					data_group.resource_path = path
 					ResourceSaver.save(data_group, path, save_flags)
-
 
 func _update_visual_instances_visibility() -> void:
 	for data_group_idx in rid_references.size():
@@ -50,6 +50,7 @@ func _update_visual_instances_transform() -> void:
 func add_mesh(plus_mesh: MMPlusMesh, at_idx: int = -1):
 	var new_data: MMPlusData = MMPlusData.new()
 	new_data.mesh_data = plus_mesh
+
 	if at_idx == -1:
 		data.append(new_data)
 		rid_references.append(MMRidRef.new())
@@ -59,6 +60,10 @@ func add_mesh(plus_mesh: MMPlusMesh, at_idx: int = -1):
 	_update_buffer(data.size(), {})
 
 func remove_mesh(idx: int):
+	var file_path: String = data[idx].resource_path
+	if FileAccess.file_exists(file_path):
+		DirAccess.remove_absolute(data[idx].resource_path)
+
 	_delete_group_data(idx)
 	data.remove_at(idx)
 	rid_references.remove_at(idx)
@@ -101,10 +106,9 @@ func _add_visual_instance(group_idx : int, aabb : AABB) -> void:
 	var m_rid = RenderingServer.multimesh_create()
 	var i_rid : RID = RenderingServer.instance_create2(m_rid, get_world_3d().scenario)
 	RenderingServer.instance_set_transform(i_rid, global_transform)
-	RenderingServer.instance_set_custom_aabb(i_rid, aabb)
 	RenderingServer.multimesh_set_mesh(m_rid, mesh.get_rid())
 	RenderingServer.instance_geometry_set_cast_shadows_setting(i_rid, mesh_data.cast_shadow)
-	RenderingServer.instance_geometry_set_visibility_range(i_rid, 0.0, 100.0 + grid_size / 2.0, 0.0, 0.0, RenderingServer.VISIBILITY_RANGE_FADE_DISABLED)
+	RenderingServer.instance_geometry_set_visibility_range(i_rid, 0.0, 200.0 + grid_size / 2.0, 0.0, 0.0, RenderingServer.VISIBILITY_RANGE_FADE_DISABLED)
 	RenderingServer.instance_set_visible(i_rid, visible)
 	rid_references[group_idx].multimesh_RID_map[aabb] = m_rid
 	rid_references[group_idx].visual_instance_RID_map[aabb] = i_rid
