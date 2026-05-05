@@ -21,7 +21,7 @@ func _notification(what: int) -> void:
 			_update_visual_instances_visibility()
 		NOTIFICATION_TRANSFORM_CHANGED:
 			_update_visual_instances_transform()
-		NOTIFICATION_EDITOR_POST_SAVE:
+		NOTIFICATION_EDITOR_PRE_SAVE:
 			var save_flags: int = ResourceSaver.FLAG_CHANGE_PATH + ResourceSaver.FLAG_COMPRESS
 			for data_group in data:
 				data_group.owner_uid = ResourceLoader.get_resource_uid(owner.scene_file_path)
