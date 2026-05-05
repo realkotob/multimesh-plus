@@ -617,4 +617,4 @@ func _check_unused_resources() -> void:
 		if data == null: continue
 		if !ResourceUID.has_id(data.owner_uid):
 			DirAccess.remove_absolute(file_path)
-			print("Delete: ", file_path)
+			print("Deleting an MMPlusData resource missing a parent scene: ", file_path)

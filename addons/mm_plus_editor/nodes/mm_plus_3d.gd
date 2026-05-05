@@ -21,11 +21,10 @@ func _notification(what: int) -> void:
 			_update_visual_instances_visibility()
 		NOTIFICATION_TRANSFORM_CHANGED:
 			_update_visual_instances_transform()
-		NOTIFICATION_EDITOR_PRE_SAVE:
+		NOTIFICATION_EDITOR_POST_SAVE:
 			var save_flags: int = ResourceSaver.FLAG_CHANGE_PATH + ResourceSaver.FLAG_COMPRESS
 			for data_group in data:
 				data_group.owner_uid = ResourceLoader.get_resource_uid(owner.scene_file_path)
-				
 				var is_resource_on_disk: bool = FileAccess.file_exists(data_group.resource_path)
 				if is_resource_on_disk:
 					ResourceSaver.save(data_group, data_group.resource_path, save_flags)
