@@ -45,8 +45,27 @@ var randomize_color_button : Button = null
 var items_list: Control = null
 var collision_layer : int = 1
 var grid_size_spinbox : SpinBox = null
+var visibility_range_spinbox : SpinBox = null
 
-func _set_grid_size(new_grid_size : float):
+func _on_set_visibility_button_pressed(new_range_size: float) -> void:
+	if selected_node == null: return
+	if selected_node.visibility_range == new_range_size: return
+
+	var previous_range_size : float = selected_node.visibility_range
+
+	var undo_redo : EditorUndoRedoManager = get_undo_redo()
+	undo_redo.create_action("Set visibility range")
+
+	undo_redo.add_do_method(self, "_set_visibility_range", new_range_size)
+	undo_redo.add_undo_method(self, "_set_visibility_range", previous_range_size)
+
+	undo_redo.commit_action()
+
+func _set_visibility_range(new_range_size: float) -> void:
+	visibility_range_spinbox.value = new_range_size
+	selected_node.update_visibility_range(new_range_size)
+
+func _set_grid_size(new_grid_size : float) -> void:
 	if selected_node == null: return
 	if selected_node.grid_size == new_grid_size: return
 	var previous_grid_size : float = selected_node.grid_size
@@ -59,7 +78,7 @@ func _set_grid_size(new_grid_size : float):
 	undo_redo.add_undo_method(self, "_load_selected_node_data")
 	undo_redo.commit_action()
 
-func _toggle_collision_layer(toggled : bool, flag_idx : int):
+func _toggle_collision_layer(toggled : bool, flag_idx : int) -> void:
 	if toggled:
 		# Add collision layer
 		collision_layer |= 1 << (flag_idx)
@@ -154,7 +173,8 @@ func _init_ui() -> void:
 	grid_size_spinbox.min_value = 5.0
 	grid_size_spinbox.max_value = 500.0
 	grid_size_spinbox.step = 1.0
-	
+	grid_size_spinbox.suffix = "m"
+
 	var update_grid_size_btn : Button = Button.new()
 	update_grid_size_btn.text = "Update Grid Size"
 
@@ -164,9 +184,35 @@ func _init_ui() -> void:
 	grid_size_h_box.add_child(grid_size_spinbox)
 	grid_size_h_box.add_child(update_grid_size_btn)
 	
-	update_grid_size_btn.pressed.connect(func():
+	update_grid_size_btn.pressed.connect(func() -> void:
 		_set_grid_size(grid_size_spinbox.value)
 		)
+
+	# Visibility Range
+
+	var visibility_range_label : Label = Label.new()
+	visibility_range_label.text = "Visibility Range"
+	visibility_range_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	visibility_range_spinbox = SpinBox.new()
+	visibility_range_spinbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	visibility_range_spinbox.min_value = 10.0
+	visibility_range_spinbox.max_value = 2000.0
+	visibility_range_spinbox.step = 1.0
+	visibility_range_spinbox.suffix = "m"
+
+	var update_visibility_range_btn : Button = Button.new()
+	update_visibility_range_btn.text = "Update Visibility Range"
+
+	var visibility_range_h_box : HBoxContainer = HBoxContainer.new()
+	settings_container.add_child(visibility_range_h_box)
+	visibility_range_h_box.add_child(visibility_range_label)
+	visibility_range_h_box.add_child(visibility_range_spinbox)
+	visibility_range_h_box.add_child(update_visibility_range_btn)
+
+	update_visibility_range_btn.pressed.connect(func() -> void:
+		_on_set_visibility_button_pressed(visibility_range_spinbox.value)
+	)
 
 	# Physics layer setting
 
@@ -349,6 +395,7 @@ func _edit(object) -> void:
 # Reinit all the plugin on selected node data change, I'm too lazy to make something better right now
 func _load_selected_node_data() -> void:
 	grid_size_spinbox.value = selected_node.grid_size
+	visibility_range_spinbox.value = selected_node.visibility_range
 	data_group_list = []
 	# If no mismatch between grid size
 	# Feed the saved data as is

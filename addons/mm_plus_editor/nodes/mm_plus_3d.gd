@@ -5,6 +5,7 @@ extends Node3D
 
 @export_storage var grid_size : float = 50.0
 @export_storage var previous_grid_size : float = 50.0
+@export_storage var visibility_range: float = 100.0
 @export_storage var data : Array[MMPlusData]
 
 var save_path: String = "res://mmplus_save_dir/"
@@ -40,6 +41,20 @@ func _notification(what: int) -> void:
 			for file_path in _resources_to_delete:
 				DirAccess.remove_absolute(file_path)
 			_resources_to_delete = []
+
+func update_visibility_range(range: float):
+	visibility_range = range
+
+	for data_group_idx in rid_references.size():
+		var data_group : MMRidRef = rid_references[data_group_idx]
+		for aabb in data_group.visual_instance_RID_map:
+			RenderingServer.instance_geometry_set_visibility_range(
+				data_group.visual_instance_RID_map[aabb],
+				0.0,
+				visibility_range + grid_size / 2.0,
+				0.0,
+				0.0,
+				RenderingServer.VISIBILITY_RANGE_FADE_DISABLED)
 
 func _update_visual_instances_visibility() -> void:
 	for data_group_idx in rid_references.size():
@@ -114,7 +129,7 @@ func _add_visual_instance(group_idx : int, aabb : AABB) -> void:
 	RenderingServer.instance_set_transform(i_rid, global_transform)
 	RenderingServer.multimesh_set_mesh(m_rid, mesh.get_rid())
 	RenderingServer.instance_geometry_set_cast_shadows_setting(i_rid, mesh_data.cast_shadow)
-	RenderingServer.instance_geometry_set_visibility_range(i_rid, 0.0, 200.0 + grid_size / 2.0, 0.0, 0.0, RenderingServer.VISIBILITY_RANGE_FADE_DISABLED)
+	RenderingServer.instance_geometry_set_visibility_range(i_rid, 0.0, visibility_range + grid_size / 2.0, 0.0, 0.0, RenderingServer.VISIBILITY_RANGE_FADE_DISABLED)
 	RenderingServer.instance_set_visible(i_rid, visible)
 	rid_references[group_idx].multimesh_RID_map[aabb] = m_rid
 	rid_references[group_idx].visual_instance_RID_map[aabb] = i_rid
