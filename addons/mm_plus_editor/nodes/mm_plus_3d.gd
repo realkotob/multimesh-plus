@@ -10,6 +10,9 @@ extends Node3D
 var save_path: String = "res://mmplus_save_dir/"
 var rid_references: Array[MMRidRef]
 
+# Keep track of what resource to delete on save
+var _resources_to_delete: Array[String] = []
+
 signal data_changed
 
 func _ready() -> void:
@@ -33,6 +36,10 @@ func _notification(what: int) -> void:
 					var path: String = save_path.path_join(file_name)
 					data_group.resource_path = path
 					ResourceSaver.save(data_group, path, save_flags)
+
+			for file_path in _resources_to_delete:
+				DirAccess.remove_absolute(file_path)
+			_resources_to_delete = []
 
 func _update_visual_instances_visibility() -> void:
 	for data_group_idx in rid_references.size():
@@ -60,8 +67,8 @@ func add_mesh(plus_mesh: MMPlusMesh, at_idx: int = -1):
 
 func remove_mesh(idx: int):
 	var file_path: String = data[idx].resource_path
-	if FileAccess.file_exists(file_path):
-		DirAccess.remove_absolute(data[idx].resource_path)
+	if FileAccess.file_exists(file_path) && !_resources_to_delete.has(file_path):
+		_resources_to_delete.append(file_path)
 
 	_delete_group_data(idx)
 	data.remove_at(idx)
